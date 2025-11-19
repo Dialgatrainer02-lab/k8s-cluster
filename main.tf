@@ -153,38 +153,3 @@ module "worker" {
 }
 
 
-
-
-locals {
-  inventory = {
-    controlplane = {
-      hosts = {
-        for controlplane in var.controlplane_vm_nodes: controlplane => {
-          ansible_host = module.controlplane[controlplane].ip_config.ipv4[0]
-          ansible_ssh_private_key_file = local_sensitive_file.controlplane_private_key[controlplane].filename
-          ansible_user = local.username
-          ipv6_address = [for addr in module.controlplane[controlplane].ip_config.ipv6 :
-            addr if !can(regex("^(::|fc|fd|fe8|fe9|fea|feb|ff)", addr))][0]
-        }
-      }
-    }
-    worker = {
-      hosts = {
-        for worker in var.worker_vm_nodes: worker => {
-          ansible_host = module.worker[worker].ip_config.ipv4[0]
-          ansible_ssh_private_key_file = local_sensitive_file.worker_private_key[worker].filename
-          ansible_user = local.username
-          ipv6_address = [for addr in module.worker[worker].ip_config.ipv6 :
-    addr if !can(regex("^(::|fc|fd|fe8|fe9|fea|feb|ff)", addr))][0]
-        }
-      }
-    }
-    all = {
-      vars = {
-        ansible_port = 22
-      }
-    }
-  }
-}
-
-# eventually the cluster module

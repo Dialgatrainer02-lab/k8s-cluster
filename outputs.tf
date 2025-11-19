@@ -1,7 +1,6 @@
-output "inventory" {
-  value = local.inventory
+output "username" {
+  value = local.username
 }
-
 output "controlplanes" {
   value = module.controlplane
 }
