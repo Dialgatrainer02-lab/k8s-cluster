@@ -55,6 +55,60 @@ locals {
 
 
 
+
+
+#######################################################3
+
+#template
+
+#############################
+
+
+
+module "template" {
+  source = "git::https://github.com/Dialgatrainer02-lab/proxmox-vm.git"
+  for_each = local.worker_vm_nodes
+# 
+  proxmox_vm_cpu = {
+    cores = var.worker_vm_spec.cores
+  }
+  proxmox_vm_metadata = {
+    name        = each.key
+    description = "worker managed by terraform"
+    tags        = ["cluster", "terraform", "worker"]
+    agent       = true
+    node_name = var.worker_vm_spec.node_name
+  }
+# 
+  proxmox_vm_user_account = {
+    username = local.username
+  }
+# 
+  # fixme disk limitation
+  proxmox_vm_disks = [{
+    datastore_id = var.worker_vm_spec.disk.datastore_id
+    file_format  = "raw"
+    interface    = "virtio0"
+    size = var.worker_vm_spec.disk.size
+  }]
+# 
+  proxmox_vm_memory = {
+    dedicated = var.worker_vm_spec.memory
+  }
+  proxmox_vm_network = {
+    dns = {
+      domain  = ".Home"
+      servers = ["1.1.1.1", "1.0.0.1"]
+    }
+    ip_config = each.value.ip_config
+  }
+  proxmox_vm_boot_image = {
+    url = "https://repo.almalinux.org/almalinux/10/cloud/x86_64_v2/images/AlmaLinux-10-GenericCloud-latest.x86_64_v2.qcow2"
+  }
+}
+
+
+
 # scope is to have controlplane and workers deployed and inventory ready for ansible to configure for cluster
 module "controlplane" {
   source = "git::https://github.com/Dialgatrainer02-lab/proxmox-vm.git"
@@ -62,6 +116,11 @@ module "controlplane" {
 
   proxmox_vm_cpu = {
     cores = var.controlplane_vm_spec.cores
+  }
+
+  proxmox_vm_clone = {
+    node_name = module.template.node_name
+    vm_id = module.template.vm_id
   }
   proxmox_vm_metadata = {
     name        = each.key
@@ -93,9 +152,7 @@ module "controlplane" {
     }
     ip_config = each.value.ip_config
   }
-  proxmox_vm_boot_image = {
-    url = "https://repo.almalinux.org/almalinux/10/cloud/x86_64_v2/images/AlmaLinux-10-GenericCloud-latest.x86_64_v2.qcow2"
-  }
+  proxmox_vm_boot_image = null
 
 }
 
