@@ -120,7 +120,7 @@ module "controlplane" {
 
   proxmox_vm_clone = {
     node_name = module.template.node_name
-    vm_id = module.template.vm_id
+    vm_id = module.template.proxmox_vm.id
   }
   proxmox_vm_metadata = {
     name        = each.key
