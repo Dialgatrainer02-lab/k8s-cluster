@@ -76,6 +76,7 @@ module "template" {
     agent       = true
     node_name = var.worker_vm_spec.node_name
     vm_id = 901
+    template = true
   }
 # 
   proxmox_vm_user_account = {
@@ -83,12 +84,7 @@ module "template" {
   }
 # 
   # fixme disk limitation
-  proxmox_vm_disks = [{
-    datastore_id = var.worker_vm_spec.disk.datastore_id
-    file_format  = "raw"
-    interface    = "virtio0"
-    size = var.worker_vm_spec.disk.size
-  }]
+  proxmox_vm_disks = []
   proxmox_vm_memory = {
     dedicated = var.worker_vm_spec.memory
   }
