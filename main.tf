@@ -120,8 +120,8 @@ module "controlplane" {
   }
 
   proxmox_vm_clone = {
-    node_name = module.template.node_name
-    vm_id = module.template.proxmox_vm.vm_id
+    node_name = nonsensitive(module.template.node_name)
+    vm_id = nonsensitive(module.template.proxmox_vm.vm_id)
   }
   proxmox_vm_metadata = {
     name        = each.key
@@ -177,8 +177,8 @@ module "worker" {
   }
 
   proxmox_vm_clone = {
-    node_name = module.template.node_name
-    vm_id = module.template.proxmox_vm.vm_id
+    node_name = nonsensitive(module.template.node_name)
+    vm_id = nonsensitive(module.template.proxmox_vm.vm_id)
   }
   proxmox_vm_metadata = {
     name        = each.key
