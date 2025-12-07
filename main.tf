@@ -107,8 +107,6 @@ module "template" {
   }
 }
 
-
-
 # scope is to have controlplane and workers deployed and inventory ready for ansible to configure for cluster
 module "controlplane" {
   source = "git::https://github.com/Dialgatrainer02-lab/proxmox-vm.git"
@@ -119,8 +117,8 @@ module "controlplane" {
   }
 
   proxmox_vm_clone = {
-    node_name = module.template.proxmox_vm.node_name
-    vm_id = module.template.proxmox_vm.vm_id
+    # node_name = module.template.node_name
+    vm_id = tostring(module.template.vm_id)
   }
   proxmox_vm_metadata = {
     name        = each.key
