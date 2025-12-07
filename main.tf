@@ -64,7 +64,9 @@ locals {
 #############################
 
 
-
+locals {
+  template_node_name = var.worker_vm_spec.node_name
+}
 module "template" {
   source = "git::https://github.com/Dialgatrainer02-lab/proxmox-vm.git"
   for_each = local.worker_vm_nodes
@@ -73,11 +75,12 @@ module "template" {
     cores = var.worker_vm_spec.cores
   }
   proxmox_vm_metadata = {
-    name        = each.key
+    name        = "k8-base"
     description = "worker managed by terraform"
-    tags        = ["cluster", "terraform", "worker"]
+    tags        = ["cluster", "terraform", "template"]
     agent       = true
-    node_name = var.worker_vm_spec.node_name
+    node_name = local.template_node_name
+    vm_id = 901
   }
 # 
   proxmox_vm_user_account = {
@@ -91,7 +94,6 @@ module "template" {
     interface    = "virtio0"
     size = var.worker_vm_spec.disk.size
   }]
-# 
   proxmox_vm_memory = {
     dedicated = var.worker_vm_spec.memory
   }
@@ -100,7 +102,16 @@ module "template" {
       domain  = ".Home"
       servers = ["1.1.1.1", "1.0.0.1"]
     }
-    ip_config = each.value.ip_config
+    ip_config = {
+      ipv4 = {
+        address = "dhcp"
+        gateway = "null"
+      }
+      ipv6 = {
+        address = "dhcp"
+        gateway = "null"
+      }
+    }
   }
   proxmox_vm_boot_image = {
     url = "https://repo.almalinux.org/almalinux/10/cloud/x86_64_v2/images/AlmaLinux-10-GenericCloud-latest.x86_64_v2.qcow2"
@@ -117,8 +128,8 @@ module "controlplane" {
   }
 
   proxmox_vm_clone = {
-    # node_name = module.template.node_name
-    vm_id = tostring(module.template.vm_id)
+    node_name = local.template_node_name
+    vm_id = tostring(module.template.proxmox_vm.vm_id)
   }
   proxmox_vm_metadata = {
     name        = each.key
@@ -172,6 +183,11 @@ module "worker" {
   proxmox_vm_cpu = {
     cores = var.worker_vm_spec.cores
   }
+
+  proxmox_vm_clone = {
+    node_name = local.template_node_name
+    vm_id = tostring(module.template.proxmox_vm.vm_id)
+  }
   proxmox_vm_metadata = {
     name        = each.key
     description = "worker managed by terraform"
@@ -202,9 +218,7 @@ module "worker" {
     }
     ip_config = each.value.ip_config
   }
-  proxmox_vm_boot_image = {
-    url = "https://repo.almalinux.org/almalinux/10/cloud/x86_64_v2/images/AlmaLinux-10-GenericCloud-latest.x86_64_v2.qcow2"
-  }
+  proxmox_vm_boot_image = null
 }
 
 
