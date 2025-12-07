@@ -63,13 +63,8 @@ locals {
 
 #############################
 
-
-locals {
-  template_node_name = var.worker_vm_spec.node_name
-}
 module "template" {
   source = "git::https://github.com/Dialgatrainer02-lab/proxmox-vm.git"
-  for_each = local.worker_vm_nodes
 # 
   proxmox_vm_cpu = {
     cores = var.worker_vm_spec.cores
@@ -79,7 +74,7 @@ module "template" {
     description = "worker managed by terraform"
     tags        = ["cluster", "terraform", "template"]
     agent       = true
-    node_name = local.template_node_name
+    node_name = var.worker_vm_spec.node_name
     vm_id = 901
   }
 # 
@@ -128,8 +123,8 @@ module "controlplane" {
   }
 
   proxmox_vm_clone = {
-    node_name = local.template_node_name
-    vm_id = tostring(module.template.proxmox_vm.vm_id)
+    node_name = module.template.node_name
+    vm_id = module.template.proxmox_vm.vm_id
   }
   proxmox_vm_metadata = {
     name        = each.key
@@ -185,8 +180,8 @@ module "worker" {
   }
 
   proxmox_vm_clone = {
-    node_name = local.template_node_name
-    vm_id = tostring(module.template.proxmox_vm.vm_id)
+    node_name = module.template.node_name
+    vm_id = module.template.proxmox_vm.vm_id
   }
   proxmox_vm_metadata = {
     name        = each.key
