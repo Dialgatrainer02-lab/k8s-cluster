@@ -77,6 +77,7 @@ module "template" {
     node_name = var.worker_vm_spec.node_name
     vm_id = 901
     template = true
+    started = false
   }
 # 
   proxmox_vm_user_account = {
